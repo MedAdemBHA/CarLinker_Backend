@@ -21,8 +21,8 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
         try {
-            UserDto createUserDto = authService.createUser(signupRequest);
-            return new ResponseEntity<>(createUserDto, HttpStatus.CREATED);
+           String createUserMsg= authService.createUser(signupRequest);
+            return new ResponseEntity<>(createUserMsg, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

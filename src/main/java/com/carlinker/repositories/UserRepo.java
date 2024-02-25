@@ -6,10 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
+// Annotation indicating that this interface is a Spring Data repository
 @Repository
 public interface UserRepo  extends JpaRepository <User,Long>{
 
-
+    // Custom query method to find a list of users by their email
+    // Follows the Spring Data JPA naming convention
     List<User> findByEmail(String email);
 
 }
