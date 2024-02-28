@@ -25,7 +25,7 @@ private final UserRepo userRepo;
         List<User> existingUsers = userRepo.findByEmail(signupRequest.getEmail());
 
         if (!existingUsers.isEmpty()) {
-            throw new RuntimeException("Email already in use. Please choose a different email.");
+            throw new RuntimeException( "Email already in use. Please choose a different email.");
         }
 
         User user = new User();
