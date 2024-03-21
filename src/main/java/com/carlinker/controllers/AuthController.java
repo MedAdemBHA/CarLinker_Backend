@@ -5,9 +5,10 @@ import com.carlinker.dtos.AuthenticationRequest;
 import com.carlinker.dtos.AuthenticationResponse;
 import com.carlinker.dtos.SignupRequest;
 import com.carlinker.entities.User;
+import com.carlinker.enums.UserRole;
 import com.carlinker.repositories.UserRepo;
 import com.carlinker.services.auth.AuthService;
-import com.carlinker.services.auth.jwt.UserDetailsServiceImpl;
+import com.carlinker.services.jwt.UserDetailsServiceImpl;
 import com.carlinker.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -38,17 +39,33 @@ public class AuthController {
         this.userRepo = userRepo;
     }
 
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
-        try {
-           String createUserMsg= authService.createUser(signupRequest);
-            return new ResponseEntity<>(createUserMsg, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    @CrossOrigin(origins = "http://localhost:5173")
+        @PostMapping("/signup")
+        public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
+            try {
+               String createUserMsg= authService.createUser(signupRequest);
+                return new ResponseEntity<>(createUserMsg, HttpStatus.CREATED);
+            } catch (RuntimeException e) {
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            }
         }
+    private UserRole getUserRole(String email) {
+        Optional<User> optionalUser = userRepo.findFirstByEmail(email);
+        return optionalUser.map(User::getUserRole).orElse(null);
+    }
+
+    private long getUserId(String email) {
+        Optional<User> optionalUser = userRepo.findFirstByEmail(email);
+        return optionalUser.map(User::getId).orElse(0L);
+    }
+
+    private String getName(String email) {
+        Optional<User> optionalUser = userRepo.findFirstByEmail(email);
+        return optionalUser.map(User::getName).orElse(null);
     }
     @PostMapping("/login")
+    @CrossOrigin(origins = "http://localhost:5173")
+
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws IOException {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword()));
@@ -59,14 +76,14 @@ public class AuthController {
             return null;
         }
         final UserDetails userDetails =userDetailsService.loadUserByUsername((authenticationRequest.getEmail()));
-        final String jwt =jwtUtil.generateToken(userDetails.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails.getUsername(), getUserRole(userDetails.getUsername()),getName(userDetails.getUsername()), getUserId(userDetails.getUsername()));
         Optional<User> optionalUser =userRepo.findFirstByEmail(userDetails.getUsername());
         AuthenticationResponse authenticationResponse=new AuthenticationResponse();
         if (optionalUser.isPresent())
         {
             authenticationResponse.setJwt(jwt);
-            authenticationResponse.setUserRole(optionalUser.get().getUserRole());
-            authenticationResponse.setUserId(optionalUser.get().getId());
+            //authenticationResponse.setUserRole(optionalUser.get().getUserRole());
+            //authenticationResponse.setUserId(optionalUser.get().getId());
 
         }
         return ResponseEntity.ok(authenticationResponse);

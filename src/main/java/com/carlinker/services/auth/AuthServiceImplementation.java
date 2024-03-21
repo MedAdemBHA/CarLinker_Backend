@@ -5,6 +5,7 @@ import com.carlinker.dtos.SignupRequest;
 import com.carlinker.entities.User;
 import com.carlinker.enums.UserRole;
 import com.carlinker.repositories.UserRepo;
+import jakarta.annotation.PostConstruct;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,21 @@ private final UserRepo userRepo;
 
     public AuthServiceImplementation(UserRepo userRepo) {
         this.userRepo = userRepo;
+    }
+
+
+    @PostConstruct
+    public void createAdminAccount(){
+        User adminAccount = userRepo.findByUserRole(UserRole.ADMIN);
+        if (adminAccount==null){
+            User user = new User();
+            user.setName("admin");
+            user.setEmail("admin@test.com");
+            user.setPassword(new BCryptPasswordEncoder().encode("admin"));
+            user.setUserRole(UserRole.ADMIN);
+            userRepo.save(user);
+
+        }
     }
 
 

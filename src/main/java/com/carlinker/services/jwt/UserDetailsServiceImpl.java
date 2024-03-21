@@ -1,4 +1,4 @@
-package com.carlinker.services.auth.jwt;
+package com.carlinker.services.jwt;
 
 import com.carlinker.entities.User;
 import com.carlinker.repositories.UserRepo;
