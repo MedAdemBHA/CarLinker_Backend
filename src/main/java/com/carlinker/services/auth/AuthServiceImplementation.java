@@ -47,6 +47,7 @@ private final UserRepo userRepo;
         User user = new User();
         user.setName(signupRequest.getName());
         user.setEmail(signupRequest.getEmail());
+        user.setActive(false);
         user.setPassword(new BCryptPasswordEncoder().encode(signupRequest.getPassword()));
         user.setUserRole(UserRole.USER);
 
@@ -60,4 +61,5 @@ private final UserRepo userRepo;
 
 
     }
+
 }

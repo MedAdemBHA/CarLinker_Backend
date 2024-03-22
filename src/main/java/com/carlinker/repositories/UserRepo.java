@@ -17,7 +17,7 @@ public interface UserRepo  extends JpaRepository <User,Long>{
     // Follows the Spring Data JPA naming convention
     List<User> findByEmail(String email);
     Optional<User> findFirstByEmail(String email);
-
-
+    List<User> findByIsActive(Boolean isActive);
+    long countByIsActive(Boolean isActive);
     User findByUserRole(UserRole userRole);
 }

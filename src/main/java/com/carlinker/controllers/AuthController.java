@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -82,8 +83,10 @@ public class AuthController {
         if (optionalUser.isPresent())
         {
             authenticationResponse.setJwt(jwt);
-            //authenticationResponse.setUserRole(optionalUser.get().getUserRole());
-            //authenticationResponse.setUserId(optionalUser.get().getId());
+            User user = optionalUser.get();
+            user.setLastLoginDate(LocalDateTime.now()); // Update lastLoginDate to current time
+            userRepo.save(user);
+
 
         }
         return ResponseEntity.ok(authenticationResponse);

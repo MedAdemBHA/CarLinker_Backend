@@ -5,6 +5,4 @@ import com.carlinker.dtos.SignupRequest;
 
 public interface AuthService {
     String createUser(SignupRequest signupRequest);
-
-
 }
