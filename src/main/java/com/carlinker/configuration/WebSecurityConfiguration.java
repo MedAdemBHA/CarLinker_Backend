@@ -38,7 +38,8 @@ public class WebSecurityConfiguration {
                             response.getWriter().write("{ \"message\": \"You are not authorized\" }");
                         }))                .authorizeHttpRequests(Request-> Request
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin").hasAnyAuthority(UserRole.ADMIN.name())
+                        .requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.name())
+                        .requestMatchers("/api/user/**").hasAnyAuthority(UserRole.USER.name())
                 .anyRequest().authenticated())
                  .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

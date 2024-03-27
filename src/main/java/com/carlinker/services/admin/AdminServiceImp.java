@@ -1,6 +1,7 @@
 package com.carlinker.services.admin;
 
 import com.carlinker.dtos.SignupRequest;
+import com.carlinker.dtos.UpdateProfileRequest;
 import com.carlinker.entities.User;
 import com.carlinker.enums.UserRole;
 import com.carlinker.repositories.UserRepo;
@@ -48,15 +49,15 @@ public class AdminServiceImp implements AdminService{
     }
 
     @Override
-    public String updateUser(Long userId, SignupRequest signupRequest) {
+    public String updateUser(Long userId, UpdateProfileRequest updateProfileRequest) {
         Optional<User> optionalUser = userRepo.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            // Update user details based on the SignupRequest
-            user.setName(signupRequest.getName());
-            user.setEmail(signupRequest.getEmail());
-            user.setPassword(new BCryptPasswordEncoder().encode(signupRequest.getPassword()));
-            // Save the updated user
+            user.setName(updateProfileRequest.getName());
+            user.setEmail(updateProfileRequest.getEmail());
+            user.setActive(updateProfileRequest.getIsActive());
+
+
             userRepo.save(user);
             return "User updated successfully";
         } else {
@@ -73,14 +74,15 @@ public class AdminServiceImp implements AdminService{
             throw new RuntimeException("User not found with ID: " + userId);
         }
     }
-    public void activateUser(Long userId) {
+    public boolean activateUser(Long userId, boolean activate) {
         Optional<User> optionalUser = userRepo.findById(userId);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            user.setActive(true);
+            user.setActive(activate);
             userRepo.save(user);
+            return true; // Activation successful
         } else {
-            throw new RuntimeException("User not found with ID: " + userId);
+            return false; // User not found
         }
     }
     @Override
@@ -92,17 +94,7 @@ public class AdminServiceImp implements AdminService{
     public List<User> getInactiveUsers() {
         return userRepo.findByIsActive(false);
     }
-    @Override
-    public void deactivateUser(Long userId) {
-        Optional<User> optionalUser = userRepo.findById(userId);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            user.setActive(false);
-            userRepo.save(user);
-        } else {
-            throw new RuntimeException("User not found with ID: " + userId);
-        }
-    }
+
     public long countAllUsers() {
         return userRepo.count();
     }

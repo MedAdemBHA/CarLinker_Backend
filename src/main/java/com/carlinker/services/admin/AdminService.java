@@ -1,6 +1,7 @@
 package com.carlinker.services.admin;
 
 import com.carlinker.dtos.SignupRequest;
+import com.carlinker.dtos.UpdateProfileRequest;
 import com.carlinker.entities.User;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +12,13 @@ public interface AdminService {
 
 
     String createUser(SignupRequest signupRequest);
-    String updateUser(Long userId, SignupRequest signupRequest);
+    String updateUser(Long userId, UpdateProfileRequest updateProfileRequest);
 
     void deleteUser(Long userId);
     List<User> getAllUsers();
-    void activateUser(Long userId);
+    boolean activateUser(Long userId, boolean activate);
 
-    void deactivateUser(Long userId);
+
     List<User> getActiveUsers();
     List<User> getInactiveUsers();
     long countAllUsers();
