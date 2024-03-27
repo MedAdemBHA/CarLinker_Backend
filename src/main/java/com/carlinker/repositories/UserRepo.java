@@ -16,6 +16,7 @@ public interface UserRepo  extends JpaRepository <User,Long>{
     // Custom query method to find a list of users by their email
     // Follows the Spring Data JPA naming convention
     List<User> findByEmail(String email);
+    Optional<User> findById(Long userId);
     Optional<User> findFirstByEmail(String email);
     List<User> findByIsActive(Boolean isActive);
     long countByIsActive(Boolean isActive);

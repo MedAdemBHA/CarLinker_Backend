@@ -32,7 +32,7 @@ public class User implements UserDetails {
     @Nullable
     private Boolean isActive;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Announcement> announcements = new ArrayList<>();
+    private List<Car> announcements = new ArrayList<>();
 
     @Nullable
     public String getPhone() {
@@ -98,7 +98,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(UserRole.USER.name()));
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(userRole.name()));
+        return authorities;
     }
 
     public String getPassword() {
