@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -40,7 +40,7 @@ public class AuthController {
         this.userRepo = userRepo;
     }
 
-    @CrossOrigin(origins = "http://localhost:5173")
+
         @PostMapping("/signup")
         public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest){
             try {
@@ -65,7 +65,7 @@ public class AuthController {
         return optionalUser.map(User::getName).orElse(null);
     }
     @PostMapping("/login")
-    @CrossOrigin(origins = "http://localhost:5173")
+
 
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest, HttpServletResponse response) throws IOException {
         try {
