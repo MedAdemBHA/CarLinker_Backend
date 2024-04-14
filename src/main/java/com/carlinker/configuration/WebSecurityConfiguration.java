@@ -38,6 +38,8 @@ public class WebSecurityConfiguration {
                             response.getWriter().write("{ \"message\": \"You are not authorized\" }");
                         }))                .authorizeHttpRequests(Request-> Request
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/api/cars/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.name())
                         .requestMatchers("/api/user/**").hasAnyAuthority(UserRole.USER.name())
                 .anyRequest().authenticated())
@@ -48,7 +50,6 @@ public class WebSecurityConfiguration {
         return http.build();
 
     }
-
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider =new DaoAuthenticationProvider();
         provider.setUserDetailsService(userService.userDetailsService());
@@ -56,15 +57,13 @@ public class WebSecurityConfiguration {
         return provider;
 
     }
-
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager() ;
     }
+
 }
