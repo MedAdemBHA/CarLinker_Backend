@@ -1,22 +1,16 @@
-package com.carlinker.entities;
-
+package com.carlinker.dtos;
 
 import com.carlinker.enums.OptionType;
 import com.carlinker.enums.TransmissionType;
-import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-
-@Entity
 @Data
-@Table(name ="Car")
-public class Car {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Changed primitive type to wrapper type
-
+public class CarDto {
+    private long id;
     private String manufacturer;
     private String model;
     private String mileage;
@@ -25,21 +19,15 @@ public class Car {
     private Long price;
     private String year;
     private Boolean status;
-    @ElementCollection
-    @Enumerated(EnumType.STRING)
     private List<OptionType> option;
     private TransmissionType transmission;
-
     private String description;
     private String location;
-
-    @ElementCollection
+    private List<MultipartFile> images;
     private List<String> imageFiles;
-
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private long userID;
+    private String name;
+    private String phone;
+    private LocalDateTime lastLoginDate;
 
 }
-
