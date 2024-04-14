@@ -61,6 +61,11 @@ private final UserRepo userRepo;
         }
         return users.get(0);
     }
+    @Override
+    public int getNumberOfCarsPostedByUser(Long userId) {
+        User user = getUserById(userId);
+        return user.getCars().size();
+    }
 
 
 

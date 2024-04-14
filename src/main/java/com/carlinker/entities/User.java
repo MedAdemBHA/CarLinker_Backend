@@ -103,6 +103,19 @@ public class User implements UserDetails {
         return authorities;
     }
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Car> cars;
+
+
+
+    public List<Car> getCars() {
+        return cars;
+    }
+
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
+    }
+
     public String getPassword() {
         return password;
     }

@@ -10,4 +10,5 @@ public interface UserService {
     User getUserById(Long userId);
     String updateUser(Long userId, UpdateProfileRequest updateProfileRequest);
     User getUserByEmail(String email);
+    int getNumberOfCarsPostedByUser(Long userId);
 }
