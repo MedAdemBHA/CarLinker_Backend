@@ -1,25 +1,37 @@
 package com.carlinker.controllers;
 
-import com.carlinker.dtos.SignupRequest;
-import com.carlinker.dtos.UpdateProfileRequest;
-import com.carlinker.dtos.UserCountsDTO;
-import com.carlinker.dtos.UserDto;
+import com.carlinker.dtos.*;
+import com.carlinker.entities.Car;
 import com.carlinker.entities.User;
+import com.carlinker.repositories.CarRepository;
 import com.carlinker.services.admin.AdminService;
 import com.carlinker.services.jwt.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
     private final AdminService adminService;
+    private final CarRepository carRepository;
 private final UserService userService;
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -127,4 +139,180 @@ private final UserService userService;
         UserCountsDTO userCounts = new UserCountsDTO(totalUsers, activeUsers, inactiveUsers);
         return new ResponseEntity<>(userCounts, HttpStatus.OK);
     }
+
+    @GetMapping("/cars")
+    public ResponseEntity<List<CarDto>> getCars() {
+        try {
+            List<Car> cars = carRepository.findAll();
+            List<CarDto> carDtos = new ArrayList<>();
+
+            for (Car car : cars) {
+                CarDto carDto = new CarDto();
+                BeanUtils.copyProperties(car, carDto);
+                // Manually copy each field from Car entity to CarDto
+                carDto.setId(car.getId());
+                carDto.setManufacturer(car.getManufacturer());
+                carDto.setModel(car.getModel());
+                carDto.setMileage(car.getMileage());
+                carDto.setColor(car.getColor());
+                carDto.setFuelType(car.getFuelType());
+                carDto.setPrice(car.getPrice());
+                carDto.setYear(car.getYear());
+                carDto.setStatus(car.getStatus());
+                carDto.setOption(car.getOption());
+                carDto.setTransmission(car.getTransmission());
+                carDto.setDescription(car.getDescription());
+                carDto.setLocation(car.getLocation());
+                carDto.setUserID(car.getUser().getId());
+                carDto.setName(car.getUser().getUsername());
+                carDto.setPhone(car.getUser().getPhone());
+                carDto.setLastLoginDate(car.getUser().getLastLoginDate());
+                List<String> imagePaths = car.getImageFiles().stream()
+                        .map(fileName -> "/images/" + fileName)
+                        .collect(Collectors.toList());
+
+                carDto.setImageFiles(imagePaths);
+                carDtos.add(carDto);
+            }
+
+            return ResponseEntity.ok(carDtos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("/cars/inactive")
+    public ResponseEntity<List<CarDto>> getInactiveCars() {
+        try {
+            List<Car> cars = carRepository.findByStatus(false); // Assuming you have a method in the repository to fetch cars by status
+            List<CarDto> carDtos = new ArrayList<>();
+
+            for (Car car : cars) {
+                CarDto carDto = new CarDto();
+                BeanUtils.copyProperties(car, carDto);
+                // Manually copy each field from Car entity to CarDto
+                carDto.setId(car.getId());
+                carDto.setManufacturer(car.getManufacturer());
+                carDto.setModel(car.getModel());
+                carDto.setMileage(car.getMileage());
+                carDto.setColor(car.getColor());
+                carDto.setFuelType(car.getFuelType());
+                carDto.setPrice(car.getPrice());
+                carDto.setYear(car.getYear());
+                carDto.setStatus(car.getStatus());
+                carDto.setOption(car.getOption());
+                carDto.setTransmission(car.getTransmission());
+                carDto.setDescription(car.getDescription());
+                carDto.setLocation(car.getLocation());
+                carDto.setUserID(car.getUser().getId());
+                List<String> imagePaths = car.getImageFiles().stream()
+                        .map(fileName -> "/images/" + fileName)
+                        .collect(Collectors.toList());
+
+                carDto.setImageFiles(imagePaths);
+                carDtos.add(carDto);
+            }
+
+            return ResponseEntity.ok(carDtos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @PutMapping("/cars/{id}/activate")
+    public ResponseEntity<String> toggleActivateCar(@PathVariable Long id) {
+        try {
+            Optional<Car> optionalCar = carRepository.findById(id);
+            if (!optionalCar.isPresent()) {
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+            }
+
+            Car car = optionalCar.get();
+            boolean currentStatus = car.getStatus();
+            car.setStatus(!currentStatus);
+
+            carRepository.save(car);
+
+            String message = currentStatus ? "Car deactivated successfully" : "Car activated successfully";
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to toggle car activation status", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @DeleteMapping("/cars/{id}")
+    public ResponseEntity<String> deleteCar(@PathVariable Long id) {
+        try {
+            Optional<Car> optionalCar = carRepository.findById(id);
+            if (!optionalCar.isPresent()) {
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+            }
+
+            carRepository.deleteById(id);
+            return new ResponseEntity<>("Car deleted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to delete car", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("/cars/{id}")
+    public ResponseEntity<String> updateCar(@PathVariable Long id, @ModelAttribute CarDto carDto) {
+        try {
+            Optional<Car> optionalCar = carRepository.findById(id);
+            if (!optionalCar.isPresent()) {
+                return new ResponseEntity<>("Car not found", HttpStatus.NOT_FOUND);
+            }
+
+            Car car = optionalCar.get();
+            car.setManufacturer(carDto.getManufacturer());
+            car.setModel(carDto.getModel());
+            car.setMileage(carDto.getMileage());
+            car.setColor(carDto.getColor());
+            car.setFuelType(carDto.getFuelType());
+            car.setPrice(carDto.getPrice());
+            car.setYear(carDto.getYear());
+            car.setStatus(carDto.getStatus());
+            car.setOption(carDto.getOption());
+            car.setTransmission(carDto.getTransmission());
+            car.setDescription(carDto.getDescription());
+            car.setLocation(carDto.getLocation());
+
+            // Update image files if new images are provided
+            if (carDto.getImages() != null ) {
+                List<String> imageFiles = new ArrayList<>();
+                for (MultipartFile image : carDto.getImages()) {
+                    imageFiles.add(saveImage(image));
+                }
+                car.setImageFiles(imageFiles);
+            }
+
+            carRepository.save(car);
+
+            return new ResponseEntity<>("Car updated successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to update car", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    private String saveImage(MultipartFile image) throws IOException {
+        Date createAt = new Date();
+        String storageFileName = createAt.getTime() + "_" + image.getOriginalFilename();
+
+        try {
+            String uploadDir = "public/images/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, Paths.get(uploadDir + storageFileName), StandardCopyOption.REPLACE_EXISTING);
+            }
+            return storageFileName; // Return the filename only
+        } catch (Exception ex) {
+            System.out.println("Exception: " + ex.getMessage());
+            throw ex; // Re-throw the exception to handle it at the higher level
+        }
+    }
+
+
 }
